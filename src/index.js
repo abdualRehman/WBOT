@@ -35,6 +35,7 @@ async function Main() {
         await setupPopup();
         await checkForUpdate();
         console.log("WBOT is ready !! Let those message come.");
+
     } catch (e) {
         console.error("\nLooks like you got an error. " + e);
         try {
@@ -97,11 +98,21 @@ async function Main() {
                 await page.authenticate({ username: argv.username, password: argv.password });
             }
             page.setUserAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36");
+
+            // page.evaluate(`
+            //     window.onload = function () {
+            //         // Custom.init();
+            //         alert("inject reload function call");
+            //     };
+            // `);
+
+
+
             await page.goto('https://web.whatsapp.com', {
                 waitUntil: 'networkidle0',
                 timeout: 0
             });
-            //console.log(contents);
+            // console.log(contents);
             //await injectScripts(page);
             botjson.then((data) => {
                 page.evaluate("var intents = " + data);
@@ -117,10 +128,10 @@ async function Main() {
             // When the settings file is edited multiple calls are sent to function. This will help
             // to prevent from getting corrupted settings data
             let timeout = 5000;
-            
+
             // Register a filesystem watcher
             fs.watch(constants.BOT_SETTINGS_FILE, (event, filename) => {
-                setTimeout(()=> {
+                setTimeout(() => {
                     settings.LoadBotSettings(event, filename, page);
                 }, timeout);
             });
@@ -129,11 +140,18 @@ async function Main() {
             page.exposeFunction("saveFile", utils.saveFileFromBase64);
             page.exposeFunction("resolveSpintax", spintax.unspin);
             page.exposeFunction("checkSpam", utils.checkSpam);
+            page.exposeFunction("callReloadFunction", callReloadFunction);
         }
     }
 
+    async function callReloadFunction() {
+        console.log("ibdex reload call");
+    }
+
+
     async function injectScripts(page) {
-        return await page.waitForSelector('[data-icon=laptop]')
+        // return await page.waitForSelector('[data-icon=laptop]')
+        return await page.waitForSelector('[data-icon=laptop]', { visible: true })
             .then(async () => {
                 var filepath = path.join(__dirname, "WAPI.js");
                 await page.addScriptTag({ path: require.resolve(filepath) });
@@ -153,12 +171,15 @@ async function Main() {
         await utils.delay(10000);
         //console.log("loaded");
         var output = await page.evaluate("localStorage['last-wid']");
-        //console.log("\n" + output);
-        if (output) {
+        var businessOutput = await page.evaluate("localStorage['last-wid-md']");
+        // console.log("\n" + output);
+        if (output || businessOutput) {
+            output = true;
             spinner.stop("Looks like you are already logged in");
             await injectScripts(page);
         } else {
             spinner.info("You are not logged in. Please scan the QR below");
+            output = false;
         }
         return output;
     }
@@ -211,7 +232,7 @@ async function Main() {
             style = document.createElement('style');
             head.appendChild(style);
             style.appendChild(document.createTextNode(css));
-        `)
+        `);
         spinner.stop("setting up smart reply ... done!");
         page.waitForSelector("#main", { timeout: 0 }).then(async () => {
             await page.exposeFunction("sendMessage", async message => {
@@ -226,7 +247,7 @@ async function Main() {
         });
     }
 
-    async function setupPopup () {
+    async function setupPopup() {
         spinner.start("Setting up the popup");
         await page.waitForSelector("#app");
         await page.evaluate(`
@@ -254,7 +275,7 @@ async function Main() {
         spinner.stop("Setting up the popup... Completed");
     }
 
-    async function checkForUpdate () {
+    async function checkForUpdate() {
         spinner.start("Checking for an Update...");
         // Using Github API (https://docs.github.com/en/rest/reference/repos#releases)
         // to get the releases data
@@ -269,7 +290,7 @@ async function Main() {
 
         spinner.stop("Checking for an Update... Completed");
 
-        if(lt(myVersion, latestVersion)) {
+        if (lt(myVersion, latestVersion)) {
             console.log(`An Update is available for you.\nPlease download the latest version ${latestVersion} of WBOT from ${latestVersionLink}`);
         }
     }

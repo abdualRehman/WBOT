@@ -41,13 +41,13 @@ this.getFileInBase64 = function (filename) {
     });
 }
 
-const getBreeds = async (Msg) => {
+const getMessageStatus = async (Msg) => {
     try {
         let domain = "https://is-spam-or-not-api.herokuapp.com/?input_sms=";
-        let z = domain+Msg;
+        let obj = domain+Msg;
+        return await axios.get(obj);
         // return await axios.get(`https://jsonplaceholder.typicode.com/users`)
         // return await axios.get(`https://is-spam-or-not-api.herokuapp.com/?input_sms=you%20win%20this%20lotery%20click%20the%20button%20below`)
-        return await axios.get(z);
     } catch (error) {
         console.error(error)
     }
@@ -55,28 +55,17 @@ const getBreeds = async (Msg) => {
 
 this.checkSpam = async function (Msg) {
     console.log("CheckSpam Function Called, the message is \n" , Msg);
-    const breeds = await getBreeds(Msg)
-    // console.log(breeds.data);
-    if (breeds.data.message) {
-        // console.log(breeds.data.message);
-        return JSON.stringify(breeds.data);
-        // return ('</span > <span style="color:#e6db74">${</span>Object.< span style = "color:#a6e22e" > entries</span > (<span style="color:#a6e22e">breeds</span>.< span style = "color:#a6e22e" > data</span >.< span style = "color:#a6e22e" > message</span >).< span style = "color:#a6e22e" > length</span ><span style="color:#e6db74">}</span><span style="color:#e6db74"> ')
-        // console.log(Got </span > <span style="color:#e6db74">${</span>Object.< span style = "color:#a6e22e" > entries</span > (<span style="color:#a6e22e">breeds</span>.< span style = "color:#a6e22e" > data</span >.< span style = "color:#a6e22e" > message</span >).< span style = "color:#a6e22e" > length</span ><span style="color:#e6db74">}</span><span style="color:#e6db74"> breeds)
+    const messageObj = await getMessageStatus(Msg)
+    if (messageObj.data.message) {
+        return JSON.stringify(messageObj.data);
     }
-
-    // return new Promise((resolve, reject) => {
-    //     try {
-    //         filename = path.join(process.cwd(), filename);
-    //         // get the mimetype
-    //         const fileMime = mime.getType(filename);
-    //         var file = fs.readFileSync(filename, { encoding: 'base64' });
-    //         resolve(`data:${fileMime};base64,${file}`);
-    //     } catch (error) {
-    //         reject(error);
-    //     }
-    // });
-    // return "Not Spam";
 }
+
+// this.callReloadFunction = async function () {
+//     console.log("Reload function is call");
+//     return true;
+// }
+
 
 this.delay = ms => {
     return new Promise(resolve => {

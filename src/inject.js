@@ -537,6 +537,19 @@ WAPI.addNumberClass = async function () {
 }
 
 
+
+WAPI.settingUpReloadFunction = function () {
+    alert("function call");
+    window.onload = function () {
+        Custom.init();
+        alert("inject reload function call");
+        window.callReloadFunction().then((response) => {
+            alert(response);
+        });
+    };
+}
+
+
 WAPI.addOptions = function () {
     var suggestions = "";
     intents.smartreply.suggestions.map((item) => {
