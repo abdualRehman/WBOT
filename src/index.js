@@ -258,8 +258,8 @@ async function Main() {
                         //newChat(mutation.addedNodes[0].querySelector('.copyable-text span').innerText);
                         console.log("%cChat changed !!", "font-size:x-large");
                         WAPI.setupFeaturePage();
-                        WAPI.addSpamCss(event.target);
                         WAPI.addNumberClass();
+                        WAPI.addSpamCss(event.target);
                     }
                 }
             });

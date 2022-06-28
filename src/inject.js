@@ -353,9 +353,9 @@ async function processMessages1(data) {
                             return 0;
                         });
 
-                        console.log("els", els);
-                        console.log("els", els.length);
-                        console.log("getAllChatsWithNewMsg", getAllChatsWithNewMsg);
+                        console.log("Elements", els);
+                        console.log("Elements Length", els.length);
+                        console.log("GetAllChatsWithNewMsg Obj", getAllChatsWithNewMsg);
                         if (els.length > 0 && getAllChatsWithNewMsg.length > 0) {
                             for (var j = 0; j < getAllChatsWithNewMsg.length; j++) {
                                 var x = els.length - j - 1;
@@ -375,27 +375,12 @@ async function processMessages1(data) {
                         // --------------------------------------------------------------------------------------------   window.checkSpam()--------------------------------
                         window.checkSpam(message.body).then((response) => {
                             var res = JSON.parse(response);
-                            console.log(res);
+                            console.log("Message res after checking ", res);
 
                             if (res.response === 1) {
-                                var from = message.from._serialized;
-                                console.log("From \n", from);
-                                var d = document.getElementsByClassName(from);
-                                console.log("from class", d);
-                                var d1 = d[0].querySelectorAll('.vq6sj')
-                                console.log("from clid class", d1);
-                                d1[0].classList.add("spam-active");
-                                // d1[0].style.backgroundColor = "#8c880c";
 
                                 var msgId = message.id;
-                                var maainDiv = document.getElementById('main');
-                                var msgDiv = maainDiv.querySelector("div[data-id='" + msgId + "']")
-                                console.log(msgDiv);
-                                if (msgDiv) {
-                                    var inner = msgDiv.querySelector('.Nm1g1');
-                                    console.log(inner);
-                                    inner.classList.add("spam-active");
-                                }
+                                var from = message.from._serialized;
 
                                 var oldSpamArray = JSON.parse(localStorage.getItem(from))
 
@@ -406,6 +391,53 @@ async function processMessages1(data) {
                                 }
 
                                 localStorage.setItem(from, JSON.stringify(oldSpamArray));
+
+
+
+
+                                // console.log("From \n", from);
+
+                                // adding css on chat head   -----  method 1 
+                                // var d = document.getElementsByClassName(from);
+                                // console.log("from class", d);
+                                // var d1 = d[0].querySelectorAll('.vq6sj')
+                                // console.log("from clid class", d1);
+                                // d1[0].classList.add("spam-active");
+
+                                // adding css on chat head ------- method 2
+                                // get recent message text
+                                // _37FrU
+                                setTimeout(() => {
+
+                                    var targetedHeadArray = [...document.querySelectorAll("._1qB8f")];
+                                    console.log("targetedHeadArray", targetedHeadArray);
+                                    // targetedHeadArray[targetedHeadArray.length - 1].classList.add("spam-active");
+                                    // targetedHeadArray[targetedHeadArray.length - 1].offsetParent.classList.add("spam-active");
+                                    var targetedHead1 = targetedHeadArray.filter((e) => e.innerText == `${message.body}`)
+                                    console.log(targetedHead1);
+                                    // targetedHead1[0].classList.add("spam-active");
+                                    targetedHead1[0].offsetParent.classList.add("spam-active");
+                                    
+
+                                    // console.log(message.body);
+                                    // var targetedHead = document.querySelector(`[title="${message.body}"]`);
+                                    // console.log("Targeted Head", targetedHead);
+
+
+
+                                    var maainDiv = document.getElementById('main');
+                                    var msgDiv = maainDiv.querySelector("div[data-id='" + msgId + "']")
+                                    console.log(msgDiv);
+                                    if (msgDiv) {
+                                        var inner = msgDiv.querySelector('.Nm1g1');
+                                        console.log(inner);
+                                        inner.classList.add("spam-active");
+                                    }
+
+                                }, 1000);
+
+
+
                             }
 
 
@@ -457,25 +489,44 @@ WAPI.addSpamCss = function (e) {
 
 }
 
+async function removeSpamMessages() {
+    try {
+        console.log("RemoveSpamMessages Start");
+        document.querySelectorAll('.Nm1g1').forEach((e) => {
+            e.classList.remove('spam-active');
+        });
+    } catch (error) {
+        console.log("Error while Removing spam css", error);
+    }
+}
+
+
 async function loadSpamMessages() {
     try {
-        console.log("loadSpamMessages Start");
-        // to load spam messages first we have to find out the chat id or number
-        var msgList = document.querySelector('#main').querySelectorAll('div[data-id]')
-        console.log("msgList");
-        console.log(msgList);
-        var chatId = msgList[msgList["length"] - 1].dataset.id.split('_')[1]  // return the sender number
-        console.log("chatId", chatId);
+        setTimeout(() => {
 
-        var spamList = JSON.parse(localStorage.getItem(chatId));
-        console.log("spamList", spamList);
+            console.log("loadSpamMessages Start");
+            // to load spam messages first we have to find out the chat id or number
+            var msgList = document.querySelector('#main').querySelectorAll('div[data-id]');
+            console.log("msgList", msgList);
 
-        if (spamList && spamList.length > 0) {
-            // console.log("spamList is", spamList );
-            spamList.forEach((spamMsgID) => {
-                document.querySelector('div[data-id="' + spamMsgID + '"]').querySelector('.Nm1g1').classList.add('spam-active');
-            })
-        }
+            var chatId = msgList[msgList["length"] - 1].dataset.id.split('_')[1]  // return the sender number
+            console.log("chatId", chatId);
+
+            var spamList = JSON.parse(localStorage.getItem(chatId));
+            console.log("spamList", spamList);
+
+            if (spamList && spamList.length > 0) {
+                // console.log("spamList is", spamList );
+                spamList.forEach((spamMsgID) => {
+                    console.log("spamMsgID", spamMsgID);
+                    document.querySelector(`div[data-id="${spamMsgID}"]`)
+                        .querySelector('.Nm1g1').classList.add('spam-active');
+                })
+            }
+
+
+        }, 1000);
 
 
     } catch (error) {
@@ -485,54 +536,57 @@ async function loadSpamMessages() {
 
 WAPI.addNumberClass = async function () {
     console.log("Number class added");
-    try {
-        //------------------------- working fine right now ------------------
-        // // var getAllChatsWithNewMsg = await WAPI.getAllChats();
-        // var getAllChatsWithNewMsg = await WAPI.getAllChatsWithNewMsg();
-        // console.log(getAllChatsWithNewMsg);
-        // var els = document.querySelectorAll("._3m_Xw");
-        // console.log(els);
-        // // var x = els.length;
-        // if (els.length > 0) {
-        //     for (var j = 0; j < getAllChatsWithNewMsg.length; j++) {
-        //         var x = els.length - j - 1;
-        //         console.log(x);
-        //         console.log(getAllChatsWithNewMsg[j].id._serialized);
-        //         let element = els[x];
-        //         element.classList.add(getAllChatsWithNewMsg[j].id._serialized);
-        //         // x--;
-        //     }
-        // }
+    // try {
+    //     //------------------------- working fine right now ------------------
+    //     // // var getAllChatsWithNewMsg = await WAPI.getAllChats();
+    //     // var getAllChatsWithNewMsg = await WAPI.getAllChatsWithNewMsg();
+    //     // console.log(getAllChatsWithNewMsg);
+    //     // var els = document.querySelectorAll("._3m_Xw");
+    //     // console.log(els);
+    //     // // var x = els.length;
+    //     // if (els.length > 0) {
+    //     //     for (var j = 0; j < getAllChatsWithNewMsg.length; j++) {
+    //     //         var x = els.length - j - 1;
+    //     //         console.log(x);
+    //     //         console.log(getAllChatsWithNewMsg[j].id._serialized);
+    //     //         let element = els[x];
+    //     //         element.classList.add(getAllChatsWithNewMsg[j].id._serialized);
+    //     //         // x--;
+    //     //     }
+    //     // }
 
-        // ------------------------- Testing ------------------
+    //     // ------------------------- Testing ------------------
 
-        setTimeout(async () => {
-            var getAllChatsWithNewMsg = await WAPI.getAllChatsWithNewMsg();
-            console.log(getAllChatsWithNewMsg);
-            // var els = document.querySelectorAll("._3m_Xw");
-            // side bar array sorted by their transform(Y) vlaues from top to bottom
-            var arr = Array.from(document.querySelectorAll('._3m_Xw'))
-            var els = arr.sort(function (a, b) {
-                if (new DOMMatrixReadOnly(getComputedStyle(a).transform).m42 > new DOMMatrixReadOnly(getComputedStyle(b).transform).m42) return 1;
-                if (new DOMMatrixReadOnly(getComputedStyle(a).transform).m42 < new DOMMatrixReadOnly(getComputedStyle(b).transform).m42) return -1;
-                return 0;
-            });
+    //     setTimeout(async () => {
+    //         var getAllChatsWithNewMsg = await WAPI.getAllChatsWithNewMsg();
+    //         console.log(getAllChatsWithNewMsg);
+    //         // var els = document.querySelectorAll("._3m_Xw");
+    //         // side bar array sorted by their transform(Y) vlaues from top to bottom
+    //         var arr = Array.from(document.querySelectorAll('._3m_Xw'))
+    //         var els = arr.sort(function (a, b) {
+    //             if (new DOMMatrixReadOnly(getComputedStyle(a).transform).m42 > new DOMMatrixReadOnly(getComputedStyle(b).transform).m42) return 1;
+    //             if (new DOMMatrixReadOnly(getComputedStyle(a).transform).m42 < new DOMMatrixReadOnly(getComputedStyle(b).transform).m42) return -1;
+    //             return 0;
+    //         });
 
-            if (els.length > 0) {
-                for (var j = 0; j < getAllChatsWithNewMsg.length; j++) {
-                    let element = els[j];
-                    console.log(element);
-                    element.classList.add(getAllChatsWithNewMsg[j].id._serialized);
-                }
-            }
-        }, 1000);
+    //         if (els.length > 0) {
+    //             for (var j = 0; j < getAllChatsWithNewMsg.length; j++) {
+    //                 let element = els[j];
+    //                 console.log(element);
+    //                 element.classList.add(getAllChatsWithNewMsg[j].id._serialized);
+    //             }
+    //         }
+    //     }, 1000);
 
 
-    } catch (error) {
-        console.log(error);
-    }
+    // } catch (error) {
+    //     console.log(error);
+    // }
 
-    await loadSpamMessages()
+    // var checkbox = document.getElementById('ActiveSpamFilter');
+    // console.log("checkbox", checkbox);
+
+    // await loadSpamMessages();
 
 }
 
@@ -580,7 +634,17 @@ WAPI.addOptions = function () {
 }
 
 
-WAPI.setupFeaturePage = function () {
+WAPI.setupFeaturePage = async function () {
+    // alert("Setup the WBOT button on the header");
+
+    var checkbtn = JSON.parse(localStorage.getItem('checkbtn'));
+
+    if (!checkbtn || checkbtn == false) {
+        await removeSpamMessages();
+    } else {
+        await loadSpamMessages();
+    }
+
     // Setup the WBOT button on the header
     var header = document.querySelector("header");
     var featureButton = document.querySelector("#featureButton");
@@ -621,7 +685,7 @@ WAPI.setupFeaturePage = function () {
         
         <li>
             <label style="font-size: 20px">Active Spam Filter</label>
-            <input id = "darkMode" onclick = "handleFeature(this);" type="checkbox">
+            <input id = "ActiveSpamFilter" onclick = "handleFeature(this);" type="checkbox" ${(checkbtn == true) ? 'checked="checked"' : ''} >
         </li>
         </ul>
         <button style="background-color: #4CAF50;
@@ -656,11 +720,11 @@ WAPI.setupFeaturePage = function () {
     var ActiveSpamFilterstyle = document.querySelector("#Active-Spam-Filter");
     var darkModestyle = document.querySelector(".dark");
 
-    setValues(blurNamestyle, "#blurName");
-    setValues(blurPhotostyle, "#blurPhoto");
-    setValues(blurChatstyle, "#blurChat");
-    setValues(blurRecentMessagesstyle, "#blurRecentMessages");
-    setValues(darkModestyle, "#darkMode");
+    // setValues(blurNamestyle, "#blurName");
+    // setValues(blurPhotostyle, "#blurPhoto");
+    // setValues(blurChatstyle, "#blurChat");
+    // setValues(blurRecentMessagesstyle, "#blurRecentMessages");
+    // setValues(darkModestyle, "#darkMode");
     setValues(ActiveSpamFilterstyle, "#ActiveSpamFilter");
 }
 
@@ -708,26 +772,29 @@ function handleFeature(btn) {
     }
 }
 
-function ActiveSpamFilter(btn) {
+async function ActiveSpamFilter(btn) {
     var status = btn.checked;
     if (status == true) {
-        // If old style is present then first remove the old style
-        var style = document.querySelector("#Active-Spam-Filter");
-        if (style != null) {
-            style.remove();
-        }
-
-        // Injecting style in head
-        var head = document.getElementsByTagName('head')[0];
-        var style = document.createElement("style");
-        style.setAttribute("id", "Active-Spam-Filter");
-        style.innerHTML = `
-            ._8hzr9 { filter: blur(4px); } ._8hzr9:hover { filter: blur(0); }
-        `;
-        head.append(style);
+        localStorage.setItem('checkbtn', true);
+        await loadSpamMessages();
+        // // If old style is present then first remove the old style
+        // var style = document.querySelector("#Active-Spam-Filter");
+        // if (style != null) {
+        //     style.remove();
+        // }
+        // // Injecting style in head
+        // var head = document.getElementsByTagName('head')[0];
+        // var style = document.createElement("style");
+        // style.setAttribute("id", "Active-Spam-Filter");
+        // style.innerHTML = `
+        //     ._8hzr9 { filter: blur(4px); } ._8hzr9:hover { filter: blur(0); }
+        // `;
+        // head.append(style);
     } else {
-        var style = document.querySelector("#Active-Spam-Filter");
-        style.remove();
+        localStorage.setItem('checkbtn', false);
+        await removeSpamMessages();
+        // var style = document.querySelector("#Active-Spam-Filter");
+        // style.remove();
     }
 }
 
